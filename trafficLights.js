@@ -50,15 +50,13 @@ class TrafficLight {
                 this.y = 420;
                 this.width = height
                 this.height= width
-                break;
-                
+                break;   
         }
             
     }
 
-    draw(ctx,pair){
+    draw(ctx){
         
-
         ctx.beginPath();
         ctx.rect(this.x,this.y,this.width,this.height);
         ctx.fillStyle = this.color;
