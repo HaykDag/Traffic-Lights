@@ -28,12 +28,12 @@ const trafficLightPairs = [
 // input for the number of cars for each direction
 const carTypes = {
     bottomLeft:10,
-    bottomUp:10,
-    rightBottom:10,
-    rightLeft:12,
-    upRight:10,
-    upBottom:14,
-    leftUp:8,
+    bottomUp:30,
+    rightBottom:20,
+    rightLeft:10,
+    upRight:25,
+    upBottom:10,
+    leftUp:36,
     leftRight:15,
 }
 
@@ -44,12 +44,15 @@ for(let i = 0;i<Object.entries(carTypes).length;i++){
         cars.push(new Car(10,0.003,Object.entries(carTypes)[i][0]))
     }
 }
+let brain = new NeuralNetwork([8,12,8]);
+if(localStorage.getItem("brain")){
+    brain = JSON.parse(localStorage.getItem("brain"));
+    NeuralNetwork.mutate(brain,0.1)
+}
 
-/*
-const brain = new NeuralNetwork(8,12,8)
-let carsArr = getRemainingCars(cars);
 let outputs = [];
-*/
+
+let carsArr = getRemainingCars(cars);
 const num = 0;
 document.onmousedown = (event)=>{
     const num = Math.floor(Math.random()*8+1);
@@ -65,6 +68,14 @@ document.onmousedown = (event)=>{
     
 }
 
+function save(){
+    localStorage.setItem("brain",
+        JSON.stringify(brain));
+}
+
+function discard(){
+    localStorage.removeItem("brain");
+}
 function loop (){
     
     ctx.clearRect(0,0,canvas.width,canvas.height)
@@ -83,10 +94,25 @@ function loop (){
         } 
     }
     /*
+    if(cars.length===0){
+        save();
+        location.reload();
+    }*/
     carsArr = getRemainingCars(cars);
+    
     outputs = NeuralNetwork.feedForward(carsArr,brain);
-    console.log(outputs)
-    */
+    let maxIndex = 0;
+    for(let j = 1;j<outputs.length;j++){
+        if(outputs[j]>outputs[maxIndex]){
+            maxIndex = j
+        }
+    }
+    
+    for(let i = 0;i<lights.length;i++){
+        lights[i].update(trafficLightPairs[maxIndex]);
+    }
+
+    
     lights.forEach(light => {
         light.draw(ctx);
     });
@@ -103,7 +129,8 @@ function loop (){
     const remainingCars = new Array(8).fill(0);
 
     for(let i = 0;i<arr.length;i++){
-        switch(arr[i].type){
+        
+        switch(arr[i].dir){
             case "bottomLeft":
                 remainingCars[0]++;
                 break;
@@ -133,3 +160,6 @@ function loop (){
     return remainingCars;
  }
 
+ function lerp(A,B,t){
+    return A+(B-A)*t;
+}
